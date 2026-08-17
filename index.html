@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>VPN Subscription Proxy</title>
+</head>
+<body>
+    <pre id="output">Загрузка конфигурации...</pre>
+
+    <script>
+        async function processSubscription() {
+            // 1. Получаем оригинальную ссылку из параметра ?link=
+            const urlParams = new URLSearchParams(window.location.search);
+            const originalLink = urlParams.get('link');
+            const outputElement = document.getElementById('output');
+
+            if (!originalLink) {
+                outputElement.textContent = "Ошибка: Не указана оригинальная ссылка в параметре ?link=";
+                return;
+            }
+
+            // Название, которое вы хотите видеть в VPN-приложении
+            const myNewTitle = "profile-title: Мой Крутой VPN";
+
+            try {
+                // 2. Скачиваем данные через бесплатный CORS-прокси, чтобы обойти блокировки
+                const proxyUrl = "https://herokuapp.com"; 
+                const response = await fetch(proxyUrl + originalLink);
+                
+                if (!response.ok) throw new Error("Не удалось загрузить оригинальную подписку");
+                
+                let text = await response.text();
+
+                // 3. Находим оригинальный profile-title и заменяем его на ваш
+                let modifiedText = text.replace(/profile-title:\s*.*/g, myNewTitle);
+
+                // 4. Выводим измененный текст на экран (VPN-клиент прочитает именно его)
+                outputElement.textContent = modifiedText;
+                
+            } catch (error) {
+                outputElement.textContent = "Ошибка обработки: " + error.message;
+            }
+        }
+
+        // Запускаем функцию при открытии страницы
+        processSubscription();
+    </script>
+</body>
+</html>
